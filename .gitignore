@@ -1,0 +1,22 @@
+# IDE 관련 파일
+.idea/
+.vscode/
+
+# Gradle Wrapper 관련 파일
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+!gradlew
+!gradlew.bat
+
+# 빌드 결과물
+build/
+bin/
+
+# 로컬 설정 파일
+*.properties
+*.yml
+
+# 기타
+.DS_Store
+*.log
