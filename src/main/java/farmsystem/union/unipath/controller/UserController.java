@@ -1,11 +1,16 @@
 package farmsystem.union.unipath.controller;
 
 import farmsystem.union.unipath.dto.EmailVerificationRequestDTO;
+import farmsystem.union.unipath.dto.LoginRequestDTO;
 import farmsystem.union.unipath.dto.UserRegistrationRequestDTO;
 import farmsystem.union.unipath.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
 
     // POST /api/users/register
     // 회원가입 정보 임시 저장 후 이메일 인증 코드 발송
@@ -34,4 +40,12 @@ public class UserController {
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@Valid @RequestBody LoginRequestDTO requestDTO){
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(requestDTO.getUserId(), requestDTO.getPassword())
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        return ResponseEntity.ok("로그인 성공");
+    }
 }

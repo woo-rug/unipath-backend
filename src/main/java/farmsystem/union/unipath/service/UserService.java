@@ -37,8 +37,7 @@ public class UserService {
         }
 
         // 2. 이메일 코드 생성
-        String emailCode = "111111"; // 임시 사용
-        // String emailCode = generateEmailCode();
+        String emailCode = generateEmailCode();
 
         // 3. 이메일 전송
         String subject = "유니패스 회원가입 인증 코드";
@@ -66,20 +65,17 @@ public class UserService {
             throw new IllegalArgumentException("인증코드가 일치하지 않습니다.");
         }
 
-        // 3. 비밀번호 암호화 (추후 추가)
-        String encryptedPassword = "encrypted";
+        // 3. 비밀번호 암호화
+        String encryptedPassword = passwordEncoder.encode(tempUser.getPassword());
 
-        // 4. User 객체 새성 및 데이터베이스에 저장
-        try {
-            User user = User.builder()
-                    .name(tempUser.getName())
-                    .userId(tempUser.getUserId())
-                    .password(encryptedPassword)
-                    .email(tempUser.getEmail())
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // 4. User 객체 생성 및 데이터베이스에 저장
+        User user = User.builder()
+                .name(tempUser.getName())
+                .userId(tempUser.getUserId())
+                .password(encryptedPassword)
+                .email(tempUser.getEmail())
+                .build();
+        userRepository.save(user);
 
         // 5. 회원가입 최종 완료 후 임시 저장소 정보 삭제
         tempUserStorage.remove(requestDTO.getEmail());
