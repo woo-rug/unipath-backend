@@ -51,7 +51,7 @@ public class CareerService {
         // 4. 해당 직업군에 속한 직업 3개 조회
         CareerGroup recommendedGroup = careerGroupRepository.findById(highestScoreCareerGroupId)
                 .orElseThrow(() -> new IllegalStateException("유효하지 않은 직업군입니다."));
-        List<Career> recommendedCareers = careerRepository.findByCareerGroupId(recommendedGroup.getId());
+        List<Career> recommendedCareers = careerRepository.findByCareerGroup_Id(recommendedGroup.getId());
 
         // 5. 결과를 DTO로 변환 후 리턴
         return CareerRecommendationDTO.from(recommendedGroup, recommendedCareers);

@@ -18,7 +18,7 @@ public class User {
     @Column(nullable = false)
     private String name;
 
-    // 회원 학번
+    // 회원 학번 (예: 2024123456)
     @Column(nullable = false, unique = true)
     private String userId;
 
@@ -26,9 +26,12 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-
     @Column(nullable = false, unique = true)
     private String email;
+
+    // 학번에서 추출한 입학 연도 (예: 2024)
+    @Column(nullable = false)
+    private String admissionYear;
 
     @Builder
     public User(String name, String userId, String password, String email) {
@@ -36,5 +39,6 @@ public class User {
         this.userId = userId;
         this.password = password;
         this.email = email;
+        this.admissionYear = userId.substring(0, 4);
     }
 }
