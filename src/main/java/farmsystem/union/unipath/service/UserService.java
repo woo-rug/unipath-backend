@@ -2,12 +2,13 @@ package farmsystem.union.unipath.service;
 
 import farmsystem.union.unipath.domain.User;
 import farmsystem.union.unipath.dto.EmailVerificationRequestDTO;
+import farmsystem.union.unipath.dto.UserInfoDTO;
 import farmsystem.union.unipath.dto.UserRegistrationRequestDTO;
 import farmsystem.union.unipath.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -87,6 +88,28 @@ public class UserService {
         Random random = new Random();
         int code = 100000 + random.nextInt(900000);
         return String.valueOf(code);
+    }
+
+    @Transactional(readOnly = true)
+    public UserInfoDTO getUserInfoById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        return new UserInfoDTO(user);
+    }
+
+    @Transactional
+    public void changeUserPassword(Long id, String currentPassword, String newPassword) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 현재 비밀번호 확인
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호 인코딩 및 저장
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
 }

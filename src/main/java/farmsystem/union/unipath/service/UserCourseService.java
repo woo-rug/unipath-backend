@@ -1,5 +1,6 @@
 package farmsystem.union.unipath.service;
 
+import farmsystem.union.unipath.domain.Course;
 import farmsystem.union.unipath.domain.User;
 import farmsystem.union.unipath.domain.UserCourseHistory;
 import farmsystem.union.unipath.dto.CourseResponse;
@@ -26,10 +27,8 @@ public class UserCourseService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사용자 ID입니다."));
 
-        // 1. 해당 학기(semesterId)의 기존 수강 기록을 모두 삭제
         userCourseHistoryRepository.deleteByUserAndSemesterId(user, request.getSemesterId());
 
-        // 2. 새로운 수강 기록 저장
         for (UserCourseHistoryRequest.CourseInfo courseInfo : request.getCourses()) {
             UserCourseHistory newHistory = UserCourseHistory.builder()
                     .user(user)
@@ -51,11 +50,10 @@ public class UserCourseService {
 
         return histories.stream()
                 .map(history -> {
-                    // CourseRepository를 사용하여 학수번호에 해당하는 Course 엔티티를 찾아야 합니다.
-                    // CourseResponse가 학점 정보도 필요하므로, 이 로직이 필요합니다.
-                    // 현재 코드에는 CourseResponse에 credits 필드가 없습니다.
-                    // CourseResponse를 수정하거나, CourseHistory에 credits 필드를 추가하는 것이 좋습니다.
-                    return new CourseResponse(courseRepository.findById(history.getClassId()).get());
+                    // CourseRepository를 사용하여 Course 엔티티를 조회하고, 새 생성자로 DTO 생성
+                    Course course = courseRepository.findById(history.getClassId())
+                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 과목 코드입니다: " + history.getClassId()));
+                    return new CourseResponse(course);
                 })
                 .collect(Collectors.toList());
     }

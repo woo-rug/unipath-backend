@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @NoArgsConstructor
@@ -23,6 +24,7 @@ public class User {
     private String userId;
 
     // 회원 비밀번호
+    @Setter
     @Column(nullable = false)
     private String password;
 
