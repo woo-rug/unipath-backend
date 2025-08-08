@@ -3,8 +3,10 @@ package farmsystem.union.unipath.service;
 import farmsystem.union.unipath.domain.Career;
 import farmsystem.union.unipath.domain.CareerGroup;
 import farmsystem.union.unipath.dto.CareerRecommendationDTO;
+import farmsystem.union.unipath.dto.QuestionDTO;
 import farmsystem.union.unipath.repository.CareerGroupRepository;
 import farmsystem.union.unipath.repository.CareerRepository;
+import farmsystem.union.unipath.repository.QuestionRepository;
 import farmsystem.union.unipath.repository.QuestionWeightRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class CareerService {
     private final CareerGroupRepository careerGroupRepository;
     private final CareerRepository careerRepository;
     private final QuestionWeightRepository questionWeightRepository;
+    private final QuestionRepository questionRepository;
 
     @Transactional
     public CareerRecommendationDTO recommendCareers(Map<Long, Integer> answers){
@@ -56,6 +60,13 @@ public class CareerService {
         // 5. 결과를 DTO로 변환 후 리턴
         return CareerRecommendationDTO.from(recommendedGroup, recommendedCareers);
 
+    }
+
+    @Transactional
+    public List<QuestionDTO> getQuestions() {
+        return questionRepository.findAllByOrderByIdAsc().stream()
+                .map(QuestionDTO::new)
+                .collect(Collectors.toList());
     }
 
 }

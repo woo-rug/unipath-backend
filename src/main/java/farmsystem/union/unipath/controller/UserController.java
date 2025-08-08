@@ -1,10 +1,7 @@
 package farmsystem.union.unipath.controller;
 
 import farmsystem.union.unipath.domain.CustomUserDetails;
-import farmsystem.union.unipath.dto.EmailVerificationRequestDTO;
-import farmsystem.union.unipath.dto.LoginRequestDTO;
-import farmsystem.union.unipath.dto.LoginResponseDTO;
-import farmsystem.union.unipath.dto.UserRegistrationRequestDTO;
+import farmsystem.union.unipath.dto.*;
 import farmsystem.union.unipath.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +14,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import farmsystem.union.unipath.dto.PasswordChangeRequestDTO;
-import farmsystem.union.unipath.dto.UserInfoDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,5 +70,17 @@ public class UserController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀번호 변경 중 오류가 발생했습니다.");
         }
+    }
+
+    @GetMapping("/{id}/career")
+    public ResponseEntity<UserCareerInfoDTO> getUserCareer(@PathVariable Long id) {
+        UserCareerInfoDTO careerInfo = userService.getUserCareerInfo(id);
+        return ResponseEntity.ok(careerInfo);
+    }
+
+    @PutMapping("/{id}/career")
+    public ResponseEntity<String> updateUserCareer(@PathVariable Long id, @RequestBody CareerChoiceDTO choiceDTO) {
+        userService.updateUserCareer(id, choiceDTO.getCareerGroupId(), choiceDTO.getCareerId());
+        return ResponseEntity.ok("진로 정보가 저장되었습니다.");
     }
 }

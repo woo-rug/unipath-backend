@@ -1,9 +1,14 @@
 package farmsystem.union.unipath.service;
 
+import farmsystem.union.unipath.domain.Career;
+import farmsystem.union.unipath.domain.CareerGroup;
 import farmsystem.union.unipath.domain.User;
 import farmsystem.union.unipath.dto.EmailVerificationRequestDTO;
+import farmsystem.union.unipath.dto.UserCareerInfoDTO;
 import farmsystem.union.unipath.dto.UserInfoDTO;
 import farmsystem.union.unipath.dto.UserRegistrationRequestDTO;
+import farmsystem.union.unipath.repository.CareerGroupRepository;
+import farmsystem.union.unipath.repository.CareerRepository;
 import farmsystem.union.unipath.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +26,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final EmailSenderService emailSenderService;
     private final PasswordEncoder passwordEncoder;
+    private final CareerRepository careerRepository;
+    private final CareerGroupRepository careerGroupRepository;
 
     // 이메일 코드 임시 저장 공간
     private final Map<String, UserRegistrationRequestDTO> tempUserStorage = new HashMap<>();
@@ -109,6 +116,27 @@ public class UserService {
 
         // 새 비밀번호 인코딩 및 저장
         user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserCareerInfoDTO getUserCareerInfo(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        return new UserCareerInfoDTO(user);
+    }
+
+    @Transactional
+    public void updateUserCareer(Long userId, Long careerGroupId, Long careerId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        CareerGroup careerGroup = careerGroupRepository.findById(careerGroupId)
+                .orElseThrow(() -> new IllegalArgumentException("직업군을 찾을 수 없습니다."));
+        Career career = careerRepository.findById(careerId)
+                .orElseThrow(() -> new IllegalArgumentException("직업을 찾을 수 없습니다."));
+
+        user.setSelectedCareerGroup(careerGroup);
+        user.setSelectedCareer(career);
         userRepository.save(user);
     }
 
