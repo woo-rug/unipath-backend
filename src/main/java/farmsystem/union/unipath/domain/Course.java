@@ -22,12 +22,6 @@ public class Course {
     @Column
     private String credits;
 
-    @Column
-    private String theory;
-
-    @Column
-    private String practice;
-
     @Column(name = "required_division")
     private String requiredDivision;
 
@@ -66,15 +60,13 @@ public class Course {
     private Integer scoreSpecialTech;
 
     @Builder
-    public Course(String classId, String className, String credits, String theory, String practice,
+    public Course(String classId, String className, String credits,
                   String requiredDivision, String targetCredit, String recommendedSemester, String notes,
                   Integer scoreWebDev, Integer scoreAppDev, Integer scoreGameDev, Integer scoreDataAiDev,
                   Integer scoreInfosec, Integer scoreCloudDevops, Integer scoreTechPm, Integer scoreSpecialTech) {
         this.classId = classId;
         this.className = className;
         this.credits = credits;
-        this.theory = theory;
-        this.practice = practice;
         this.requiredDivision = requiredDivision;
         this.targetCredit = targetCredit;
         this.recommendedSemester = recommendedSemester;

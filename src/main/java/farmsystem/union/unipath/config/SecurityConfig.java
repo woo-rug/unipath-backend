@@ -49,7 +49,8 @@ public class SecurityConfig {
                                 "/api/users/login",
                                 "/api/career/test",
                                 "/api/courses",
-                                "/api/user-courses/save-history"
+                                "/api/user-courses/save-history",
+                                "/api/users-courses"
                         ).permitAll()
                         // 위 경로들을 제외한 모든 요청은 인증이 필요함
                         .anyRequest().authenticated()
