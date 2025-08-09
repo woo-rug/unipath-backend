@@ -82,6 +82,7 @@ public class UserService {
                 .userId(tempUser.getUserId())
                 .password(encryptedPassword)
                 .email(tempUser.getEmail())
+                .admissionYear(tempUser.getUserId().substring(0, 4))
                 .build();
         userRepository.save(user);
 

@@ -38,6 +38,12 @@ public class GraduationService {
             "기술창조와특허", "공학경제", "공학윤리"
     ));
 
+    private static final Set<String> BSM_COURSES = new HashSet<>(Arrays.asList(
+            "미적분학및연습1", "미적분학및연습2", "확률및통계학", "공학선형대수학", "공학수학1", "이산수학",
+            "일반물리학및실험1", "일반물리학및실험2", "일반화학및실험1", "일반화학및실험2",
+            "일반생물학및실험1", "일반생물학및실험2", "물리학개론", "화학개론", "생물학개론", "지구환경과학"
+    ));
+
 
     @Transactional(readOnly = true)
     public GraduationStatusDTO getGraduationStatus(Long userId) {
@@ -94,6 +100,8 @@ public class GraduationService {
                 commonGeneralCurrent += credits;
             } else if (BASIC_EDUCATION_COURSES.contains(courseName)) {
                 basicEducationCurrent += credits;
+            } else if (BSM_COURSES.contains(courseName)) {
+                bsmCurrent += credits;
             } else {
                 String division = course.getRequiredDivision() != null ? course.getRequiredDivision() : "";
                 switch (division) {

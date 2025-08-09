@@ -1,3 +1,5 @@
+// woo-rug/unipath-backend/unipath-backend-45cc33c60f9e50d5ca6f41f738e5e83791eb77fc/src/main/java/farmsystem/union/unipath/dto/UserInputDTO.java
+
 package farmsystem.union.unipath.dto;
 
 import lombok.Builder;
@@ -32,13 +34,13 @@ public class UserInputDTO {
     /**
      * 이수 구분별 목표 학점입니다.
      * (e.g., {"전공": 9, "교양": 6})
+     * ⭐️ [핵심 수정] 이 필드를 클라이언트가 직접 전송하도록 변경합니다.
      */
     private Map<String, Integer> targetCredits;
 
     /**
      * 사용자가 이미 수강 완료한 과목의 ID 목록입니다.
      * 이 필드는 서버의 OptimizerService에서 DB 조회 후 채워집니다.
-     * 클라이언트에서 직접 보낼 필요는 없습니다.
      */
     private List<String> completedCourseIds;
 
@@ -50,9 +52,7 @@ public class UserInputDTO {
 
     /**
      * 사용자의 직업군 정보입니다.
-     * (e.g., "백엔드 개발자")
      * 이 필드는 서버의 OptimizerService에서 DB 조회 후 채워집니다.
-     * 클라이언트에서 직접 보낼 필요는 없습니다.
      */
     private String jobGroup;
 }

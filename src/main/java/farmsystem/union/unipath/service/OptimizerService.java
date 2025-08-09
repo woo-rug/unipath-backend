@@ -121,6 +121,9 @@ public class OptimizerService {
             ProcessBuilder processBuilder = new ProcessBuilder(pythonExecutable, scriptPath);
             Process process = processBuilder.start();
 
+            String jsonInputForPython = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(optimizerInputMap);
+            log.info("--- Sending JSON to Python Script ---\n{}", jsonInputForPython);
+
             // 6. 생성한 JSON 데이터를 Python 스크립트의 표준 입력(stdin)으로 전달합니다.
             try (OutputStream os = process.getOutputStream()) {
                 objectMapper.writeValue(os, optimizerInputMap);

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable; // PathVariable 추가
 
 @RestController
 @RequestMapping("/optimizer")
@@ -17,12 +18,13 @@ public class OptimizerController {
 
     private final OptimizerService optimizerService;
 
-    @PostMapping("/recommend")
-    public ResponseEntity<ScheduleResponseDTO> recommendSchedule(@RequestBody UserInputDTO userInputDTO) {
-        // TODO: 추후 Spring Security 등 인증 기능 구현 후 실제 사용자 ID를 동적으로 받아와야 합니다.
-        Long memberId = 1L; // 임시 사용자 ID
+    // ⭐️ [핵심 수정] URL에 userId를 포함하고, @PathVariable을 통해 실제 사용자 ID를 받도록 변경
+    @PostMapping("/recommend/{userId}")
+    public ResponseEntity<ScheduleResponseDTO> recommendSchedule(
+            @PathVariable Long userId,
+            @RequestBody UserInputDTO userInputDTO) {
 
-        ScheduleResponseDTO result = optimizerService.generateSchedule(memberId, userInputDTO);
+        ScheduleResponseDTO result = optimizerService.generateSchedule(userId, userInputDTO);
         return ResponseEntity.ok(result);
     }
 }

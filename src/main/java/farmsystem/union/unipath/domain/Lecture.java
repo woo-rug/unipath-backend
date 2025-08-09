@@ -41,4 +41,12 @@ public class Lecture {
     @JsonProperty("lecture_times")
     private List<LectureTime> lectureTimes = new ArrayList<>();
 
+    @JsonProperty("course_id")
+    public String getCourseId() {
+        if (course != null) {
+            return course.getClassId();
+        }
+        return null;
+    }
+
 }
