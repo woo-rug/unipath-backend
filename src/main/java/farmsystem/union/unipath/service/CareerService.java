@@ -2,6 +2,8 @@ package farmsystem.union.unipath.service;
 
 import farmsystem.union.unipath.domain.Career;
 import farmsystem.union.unipath.domain.CareerGroup;
+import farmsystem.union.unipath.dto.CareerDetailDTO;
+import farmsystem.union.unipath.dto.CareerInfoDTO;
 import farmsystem.union.unipath.dto.CareerRecommendationDTO;
 import farmsystem.union.unipath.dto.QuestionDTO;
 import farmsystem.union.unipath.repository.CareerGroupRepository;
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -67,6 +70,20 @@ public class CareerService {
         return questionRepository.findAllByOrderByIdAsc().stream()
                 .map(QuestionDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<CareerInfoDTO> getCareerInfo() {
+        return StreamSupport.stream(careerGroupRepository.findAll().spliterator(), false)
+                .map(this::mapToCareerInfoDTO)
+                .collect(Collectors.toList());
+    }
+
+    private CareerInfoDTO mapToCareerInfoDTO(CareerGroup careerGroup) {
+        List<CareerDetailDTO> careerDetailDTOs = careerRepository.findByCareerGroup_Id(careerGroup.getId()).stream()
+                .map(career -> new CareerDetailDTO(career.getName(), career.getDescription()))
+                .collect(Collectors.toList());
+        return new CareerInfoDTO(careerGroup.getName(), careerDetailDTOs);
     }
 
 }

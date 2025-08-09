@@ -1,5 +1,6 @@
 package farmsystem.union.unipath.controller;
 
+import farmsystem.union.unipath.dto.CareerInfoDTO;
 import farmsystem.union.unipath.dto.CareerRecommendationDTO;
 import farmsystem.union.unipath.dto.CareerTestRequestDTO;
 import farmsystem.union.unipath.dto.QuestionDTO;
@@ -28,5 +29,11 @@ public class CareerController {
     public ResponseEntity<CareerRecommendationDTO> recommendCareers(@Valid @RequestBody CareerTestRequestDTO requestDTO) {
         CareerRecommendationDTO recommendation = careerService.recommendCareers(requestDTO.getAnswers());
         return ResponseEntity.ok(recommendation);
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<List<CareerInfoDTO>> getCareerInfo() {
+        List<CareerInfoDTO> careerInfo = careerService.getCareerInfo();
+        return ResponseEntity.ok(careerInfo);
     }
 }
