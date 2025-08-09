@@ -50,4 +50,9 @@ public class User {
         this.email = email;
         this.admissionYear = admissionYear;
     }
+
+    public void updateCareer(Career career, CareerGroup careerGroup) {
+        this.selectedCareer = career;
+        this.selectedCareerGroup = careerGroup;
+    }
 }

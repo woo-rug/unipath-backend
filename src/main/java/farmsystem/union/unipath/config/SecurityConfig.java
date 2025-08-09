@@ -42,25 +42,7 @@ public class SecurityConfig {
                     return config;
                 }))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 인증 없이 접근 가능한 공개 API 경로들
-                        .requestMatchers(
-                                "/api/users/register",
-                                "/api/users/*",
-                                "/api/users/verify-email",
-                                "/api/users/login",
-                                "/api/career/test",
-                                "/api/courses",
-                                "/api/user-courses",
-                                "/api/user-courses/save-history",
-                                "/api/user-courses/*/status",
-                                "/api/career",
-                                "/api/career/questions",
-                                "/api/career/info",
-                                "/api/career/test",
-                                "/api/courses/graduation-status/*"
-                        ).permitAll()
-                        // 위 경로들을 제외한 모든 요청은 인증이 필요함
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 );
         return http.build();
     }

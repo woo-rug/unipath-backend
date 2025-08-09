@@ -80,7 +80,7 @@ public class UserController {
 
     @PutMapping("/{id}/career")
     public ResponseEntity<String> updateUserCareer(@PathVariable Long id, @RequestBody CareerChoiceDTO choiceDTO) {
-        userService.updateUserCareer(id, choiceDTO.getCareerGroupId(), choiceDTO.getCareerId());
+        userService.updateUserCareer(id, choiceDTO.getCareerGroupName(), choiceDTO.getCareerName());
         return ResponseEntity.ok("진로 정보가 저장되었습니다.");
     }
 }

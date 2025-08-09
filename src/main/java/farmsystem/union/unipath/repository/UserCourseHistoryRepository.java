@@ -11,8 +11,8 @@ import java.util.List;
 
 public interface UserCourseHistoryRepository extends JpaRepository<UserCourseHistory, Long> {
 
-    List findByUserAndSemesterId(User user, int semesterId);
-    List findByUser(User user);
+    List<UserCourseHistory> findByUserAndSemesterId(User user, int semesterId);
+    List<UserCourseHistory> findByUser(User user);
 
     @Modifying
     @Query("DELETE FROM UserCourseHistory u WHERE u.user = :user AND u.semesterId = :semesterId")

@@ -127,13 +127,15 @@ public class UserService {
     }
 
     @Transactional
-    public void updateUserCareer(Long userId, Long careerGroupId, Long careerId) {
+    public void updateUserCareer(Long userId, String careerGroupName, String careerName) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        CareerGroup careerGroup = careerGroupRepository.findById(careerGroupId)
-                .orElseThrow(() -> new IllegalArgumentException("직업군을 찾을 수 없습니다."));
-        Career career = careerRepository.findById(careerId)
-                .orElseThrow(() -> new IllegalArgumentException("직업을 찾을 수 없습니다."));
+
+        CareerGroup careerGroup = careerGroupRepository.findByName(careerGroupName)
+                .orElseThrow(() -> new IllegalArgumentException("다음 이름의 직업군을 찾을 수 없습니다: " + careerGroupName));
+
+        Career career = careerRepository.findByName(careerName)
+                .orElseThrow(() -> new IllegalArgumentException("다음 이름의 직업을 찾을 수 없습니다: " + careerName));
 
         user.setSelectedCareerGroup(careerGroup);
         user.setSelectedCareer(career);

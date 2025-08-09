@@ -2,14 +2,12 @@ package farmsystem.union.unipath.service;
 
 import farmsystem.union.unipath.domain.Career;
 import farmsystem.union.unipath.domain.CareerGroup;
+import farmsystem.union.unipath.domain.User;
 import farmsystem.union.unipath.dto.CareerDetailDTO;
 import farmsystem.union.unipath.dto.CareerInfoDTO;
 import farmsystem.union.unipath.dto.CareerRecommendationDTO;
 import farmsystem.union.unipath.dto.QuestionDTO;
-import farmsystem.union.unipath.repository.CareerGroupRepository;
-import farmsystem.union.unipath.repository.CareerRepository;
-import farmsystem.union.unipath.repository.QuestionRepository;
-import farmsystem.union.unipath.repository.QuestionWeightRepository;
+import farmsystem.union.unipath.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,21 +26,22 @@ public class CareerService {
     private final CareerRepository careerRepository;
     private final QuestionWeightRepository questionWeightRepository;
     private final QuestionRepository questionRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public CareerRecommendationDTO recommendCareers(Map<Long, Integer> answers){
+    public CareerRecommendationDTO recommendCareers(Map<Long, Integer> answers) {
 
         // 1. 모든 직업군의 초기 점수를 0으로 초기화
         Iterable<CareerGroup> careerGroups = careerGroupRepository.findAll();
         Map<Long, Integer> scoreMap = new HashMap<>();
-        for(CareerGroup group : careerGroups){
+        for (CareerGroup group : careerGroups) {
             scoreMap.put(group.getId(), 0);
         }
 
         // 2. 답변에 따라 직업군별 점수 계산
         answers.forEach((questionId, score) -> {
             questionWeightRepository.findByQuestionId(questionId)
-                    .forEach(weight ->{
+                    .forEach(weight -> {
                         Long careerGroupId = weight.getCareerGroup().getId();
                         int currentScore = scoreMap.getOrDefault(careerGroupId, 0);
                         scoreMap.put(careerGroupId, currentScore + (score * weight.getWeight()));
@@ -86,4 +85,19 @@ public class CareerService {
         return new CareerInfoDTO(careerGroup.getName(), careerDetailDTOs);
     }
 
+    @Transactional
+    public void setUserCareer(Long userId, String careerName, String careerGroupName) {
+        Career career = careerRepository.findByName(careerName)
+                .orElseThrow(() -> new IllegalArgumentException("Career not found with name: " + careerName));
+
+        CareerGroup careerGroup = careerGroupRepository.findByName(careerGroupName)
+                .orElseThrow(() -> new IllegalArgumentException("CareerGroup not found with name: " + careerGroupName));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        user.updateCareer(career, careerGroup);
+        userRepository.save(user);
+    }
+    
 }
