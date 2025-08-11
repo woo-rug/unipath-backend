@@ -2,6 +2,7 @@
 
 package farmsystem.union.unipath.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import farmsystem.union.unipath.domain.Course;
 import lombok.Builder;
 import lombok.Data;
@@ -16,8 +17,10 @@ import java.util.Map;
 @Builder
 public class CourseDTO {
 
-    private String id;
+    @JsonProperty("id")
+    private String classId;
     private String name;
+    @JsonProperty("credit")
     private int credit;
     // ⭐️ [핵심 수정] Python이 사용할 수 있도록 단순화된 이수 구분 ("전공", "교양", "기타")
     private String ctype;
@@ -51,7 +54,7 @@ public class CourseDTO {
 
 
         return CourseDTO.builder()
-                .id(course.getClassId())
+                .classId(course.getClassId())
                 .name(course.getClassName())
                 .credit(creditValue)
                 .ctype(mappedType) // "전공", "교양" 값을 그대로 사용
@@ -77,9 +80,8 @@ public class CourseDTO {
             case "공통교양":
             case "학문기초":
             case "교양필수":
-                return "교양";
             default:
-                return "기타";
+                return "교양";
         }
     }
 }

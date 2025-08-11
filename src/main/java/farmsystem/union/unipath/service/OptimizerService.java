@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -66,7 +67,8 @@ public class OptimizerService {
         if (user.getSelectedCareerGroup() == null || user.getSelectedCareerGroup().getName().isEmpty()) {
             throw new IllegalArgumentException("추천을 받으려면 먼저 직업을 설정해야 합니다.");
         }
-        userInput.setJobGroup(user.getSelectedCareerGroup().getName());
+        String jobGroup = user.getSelectedCareerGroup().getName();
+        userInput.setJobGroup(jobGroup);
 
         // 2. 사용자가 이미 수강한 과목 목록을 조회합니다.
         List<UserCourseHistory> completedCourses = userCourseHistoryRepository.findByUser(user);
@@ -95,11 +97,15 @@ public class OptimizerService {
         List<Course> allCourses = courseRepository.findAllById(courseIds);
 
         // 4. Python 스크립트에 전달할 데이터(JSON)를 생성합니다.
-        // Python 스크립트가 'user_input' 키를 기대하므로, 필드명을 명시적으로 지정하기 위해 Map을 사용합니다.
         Map<String, Object> optimizerInputMap = new HashMap<>();
         optimizerInputMap.put("lectures", allLectures.stream().map(LectureDTO::fromEntity).collect(Collectors.toList()));
         optimizerInputMap.put("courses", allCourses.stream().map(CourseDTO::fromEntity).collect(Collectors.toList()));
         optimizerInputMap.put("user_input", userInput);
+
+        // 4-1. 직업군별 과목 점수 데이터를 생성합니다.
+        Map<String, Integer> courseScores = getCourseScoresByJobGroup(allCourses, jobGroup);
+        optimizerInputMap.put("course_scores", courseScores);
+
 
         try {
             // 5. 외부 프로세스로 Python 스크립트를 실행합니다.
@@ -183,5 +189,39 @@ public class OptimizerService {
             log.error("Failed to execute optimizer script", e);
             throw new RuntimeException("시간표 생성 중 내부 오류가 발생했습니다.", e);
         }
+    }
+
+    /**
+     * 직업군 이름에 따라 Course 엔티티에서 적절한 점수 필드를 선택하고,
+     * (학수번호, 점수) 형태의 Map으로 변환하여 반환합니다.
+     * @param courses 점수를 추출할 Course 목록
+     * @param jobGroup 사용자 직업군 이름
+     * @return (학수번호, 점수) Map
+     */
+    private Map<String, Integer> getCourseScoresByJobGroup(List<Course> courses, String jobGroup) {
+        Map<String, Function<Course, Integer>> scoreAccessors = new HashMap<>();
+        scoreAccessors.put("웹 개발", Course::getScoreWebDev);
+        scoreAccessors.put("앱 개발", Course::getScoreAppDev);
+        scoreAccessors.put("게임 개발", Course::getScoreGameDev);
+        scoreAccessors.put("데이터/AI 개발", Course::getScoreDataAiDev);
+        scoreAccessors.put("정보보안", Course::getScoreInfosec);
+        scoreAccessors.put("클라우드/DevOps", Course::getScoreCloudDevops);
+        scoreAccessors.put("기술 기획/관리", Course::getScoreTechPm);
+        scoreAccessors.put("특수 기술/기타", Course::getScoreSpecialTech);
+
+        Function<Course, Integer> scoreAccessor = scoreAccessors.get(jobGroup);
+        if (scoreAccessor == null) {
+            log.warn("'{}'에 해당하는 직업군 점수 컬럼을 찾을 수 없습니다. 기본 점수(0)를 사용합니다.", jobGroup);
+            return Collections.emptyMap();
+        }
+
+        return courses.stream()
+                .collect(Collectors.toMap(
+                        Course::getClassId,
+                        course -> {
+                            Integer score = scoreAccessor.apply(course);
+                            return score != null ? score : 0; // 점수가 null이면 0점으로 처리
+                        }
+                ));
     }
 }

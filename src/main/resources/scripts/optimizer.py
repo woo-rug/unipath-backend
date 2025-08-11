@@ -38,14 +38,13 @@ class TimeTableCPSATSolver:
         print(f"- User preferences: {self.preferences}", file=sys.stderr)
 
         # 가중치 설정
-        self.job_recommendation_weight = 1000
-        self.credit_deviation_penalty = 1500
-        self.course_count_penalty = 800
-        self.holiday_penalty = 50
+        self.job_recommendation_weight = 50
+        self.holiday_penalty = 30
         self.lunch_break_penalty = 30
         self.avoid_morning_penalty_early = 20
         self.avoid_morning_penalty_late = 10
-        self.avoid_evening_penalty = 15
+        self.avoid_evening_penalty = 20
+        self.course_count_penalty = 5000
 
     def solve(self):
         self._add_constraints()
@@ -96,39 +95,47 @@ class TimeTableCPSATSolver:
                     if is_overlapping: break
                 if is_overlapping:
                     self.model.AddBoolOr([self.selected_lectures[i].Not(), self.selected_lectures[j].Not()])
-
-    def _define_objective(self):
-        print("\n--- [3] Defining Objective Function ---", file=sys.stderr)
-
-        total_job_score = 0
-        job_group = self.user_input.get('jobGroup')
-        if job_group:
-            job_scores = [(self.courses[lec['courseId']].get('jobRecommendations', {}).get(job_group) or 0) for lec in self.lectures]
-            total_job_score = sum(self.selected_lectures[i] * job_scores[i] for i in range(self.num_lectures))
-
-        credit_deviation_terms = []
+        
+        # ⭐️ [핵심 수정] 학점 총합에 대한 하드 제약 추가
         target_credits = self.user_input.get('targetCredits')
         if target_credits:
+            print(f"- Applying credit constraints: {target_credits}", file=sys.stderr)
             for ctype, required_credit in target_credits.items():
                 if required_credit > 0:
                     actual_credits_expr = sum(
                         self.selected_lectures[i] * self.courses[lec['courseId']]['credit']
                         for i, lec in enumerate(self.lectures) if self.courses[lec['courseId']].get('ctype') == ctype
                     )
-                    deviation = self.model.NewIntVar(-30, 30, f'deviation_{ctype}')
-                    self.model.Add(deviation == actual_credits_expr - required_credit)
-                    abs_deviation = self.model.NewIntVar(0, 30, f'abs_deviation_{ctype}')
-                    self.model.AddAbsEquality(abs_deviation, deviation)
-                    credit_deviation_terms.append(abs_deviation * self.credit_deviation_penalty)
+                    # 지정된 학점과 정확히 일치하도록 제약조건 추가
+                    self.model.Add(actual_credits_expr == required_credit)
+                    print(f"- Constraint added: {ctype} credits must be exactly {required_credit}", file=sys.stderr)
+
+
+    def _define_objective(self):
+        print("\n--- [3] Defining Objective Function ---", file=sys.stderr)
+
+        total_job_score = 0
+        course_scores = self.data.get('course_scores', {})
+        if course_scores:
+            job_scores = [course_scores.get(lec['courseId'], 0) for lec in self.lectures]
+            total_job_score = sum(self.selected_lectures[i] * job_scores[i] for i in range(self.num_lectures))
 
         preference_penalty = self._calculate_preference_penalty()
 
-        total_course_count = sum(self.selected_lectures)
-        course_count_penalty_term = total_course_count * self.course_count_penalty
+        # ⭐️ [핵심 수정] 과목 수에 대한 페널티 추가
+        # 선택된 강의의 총 수에 비례하는 페널티를 추가하여, 더 적은 과목을 선호하도록 유도
+        num_selected_courses = sum(self.selected_lectures)
+        course_count_penalty_term = num_selected_courses * self.course_count_penalty
+        print(f"- Applying course count penalty. Weight: {self.course_count_penalty}", file=sys.stderr)
 
-        total_penalty = sum(credit_deviation_terms) + preference_penalty + course_count_penalty_term
+
+        # 총 페널티 = 선호도 페널티 + 과목 수 페널티
+        total_penalty = preference_penalty + course_count_penalty_term
+        
+        # 목적 함수: 직업군 점수 최대화, 페널티 최소화
         self.model.Maximize(total_job_score * self.job_recommendation_weight - total_penalty)
-        print("- Objective function defined (Minimize Penalties).", file=sys.stderr)
+        print("- Objective function defined (Maximize Score, Minimize Penalties).", file=sys.stderr)
+
 
     def _calculate_preference_penalty(self):
         all_penalty_terms = []
