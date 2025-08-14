@@ -7,13 +7,11 @@ def parse_time(time_str):
     if not time_str or ':' not in time_str:
         return -1
     try:
-        # ⭐️ [핵심 수정] parts 리스트로 받아 처음 2개(시, 분)만 사용
         parts = time_str.split(':')
         h = int(parts[0])
         m = int(parts[1])
         return h * 60 + m
     except (ValueError, TypeError, IndexError):
-        # 형식이 잘못되었거나, 리스트가 비어있는 모든 경우에 대한 방어
         return -1
 
 class TimeTableCPSATSolver:
@@ -96,7 +94,6 @@ class TimeTableCPSATSolver:
                 if is_overlapping:
                     self.model.AddBoolOr([self.selected_lectures[i].Not(), self.selected_lectures[j].Not()])
         
-        # ⭐️ [핵심 수정] 학점 총합에 대한 하드 제약 추가
         target_credits = self.user_input.get('targetCredits')
         if target_credits:
             print(f"- Applying credit constraints: {target_credits}", file=sys.stderr)
@@ -122,7 +119,6 @@ class TimeTableCPSATSolver:
 
         preference_penalty = self._calculate_preference_penalty()
 
-        # ⭐️ [핵심 수정] 과목 수에 대한 페널티 추가
         # 선택된 강의의 총 수에 비례하는 페널티를 추가하여, 더 적은 과목을 선호하도록 유도
         num_selected_courses = sum(self.selected_lectures)
         course_count_penalty_term = num_selected_courses * self.course_count_penalty
